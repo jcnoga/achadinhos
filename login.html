@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Achadinhos — Login</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#FF6B00;--pm:#E55A00;--pk:#9B30FF;
+  --dk:#1A1A2E;--w:#fff;--bg:#FFF8F2;--bd:#FFE4CC;
+  --mt:#7A6A5A;--sh:0 4px 24px rgba(255,107,0,.12)
+}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:1rem;
+  position:relative;overflow:hidden
+}
+
+/* fundo decorativo */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:linear-gradient(135deg,#1A1A2E 0%,#16213E 50%,#0F3460 100%);
+  z-index:0
+}
+.bg-blob{
+  position:fixed;border-radius:50%;filter:blur(80px);opacity:.15;z-index:0;
+  pointer-events:none
+}
+.bg-blob-1{width:400px;height:400px;background:var(--p);top:-100px;right:-100px}
+.bg-blob-2{width:300px;height:300px;background:var(--pk);bottom:-80px;left:-80px}
+
+/* card */
+.card{
+  position:relative;z-index:1;
+  background:#fff;border-radius:24px;
+  width:100%;max-width:420px;
+  padding:2.5rem 2rem;
+  box-shadow:0 20px 60px rgba(0,0,0,.3),0 0 0 1px rgba(255,107,0,.1)
+}
+
+/* logo */
+.logo-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:2rem;gap:.6rem}
+.logo-icon{
+  width:64px;height:64px;border-radius:18px;
+  background:linear-gradient(135deg,var(--p),#FF9A00);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;
+  box-shadow:0 8px 24px rgba(255,107,0,.35)
+}
+.logo-name{
+  font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;
+  color:var(--dk);letter-spacing:-.01em
+}
+.logo-badges{display:flex;gap:.4rem;align-items:center}
+.badge-ml{
+  background:#FFF200;color:#333;
+  font-size:.6rem;font-weight:800;padding:.2rem .55rem;
+  border-radius:5px;letter-spacing:.04em
+}
+.badge-sp{
+  background:#EE4D2D;color:#fff;
+  font-size:.6rem;font-weight:800;padding:.2rem .55rem;
+  border-radius:5px;letter-spacing:.04em
+}
+.logo-sub{font-size:.82rem;color:var(--mt);margin-top:.15rem}
+
+/* form */
+h2{
+  font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;
+  color:var(--dk);margin-bottom:1.5rem;text-align:center
+}
+.fg{display:flex;flex-direction:column;gap:.3rem;margin-bottom:1rem}
+.fg label{
+  font-size:.72rem;font-weight:700;color:var(--mt);
+  text-transform:uppercase;letter-spacing:.06em
+}
+.input-wrap{position:relative}
+.input-wrap i{
+  position:absolute;left:.85rem;top:50%;transform:translateY(-50%);
+  color:#ccc;font-size:.85rem;pointer-events:none
+}
+.fg input{
+  width:100%;padding:.75rem .85rem .75rem 2.4rem;
+  border:1.5px solid var(--bd);border-radius:10px;
+  font-family:'Inter',sans-serif;font-size:.93rem;color:var(--dk);
+  background:#FFF8F2;transition:all .2s;outline:none
+}
+.fg input:focus{border-color:var(--p);background:#fff;box-shadow:0 0 0 3px rgba(255,107,0,.1)}
+
+.btn-login{
+  width:100%;padding:.85rem;margin-top:.5rem;
+  background:linear-gradient(135deg,var(--p),#FF9A00);
+  color:#fff;border:none;border-radius:12px;
+  font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;
+  cursor:pointer;transition:all .25s;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  box-shadow:0 4px 16px rgba(255,107,0,.35)
+}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,107,0,.45)}
+.btn-login:disabled{opacity:.65;cursor:not-allowed;transform:none}
+
+.error-msg{
+  display:none;margin-top:1rem;
+  padding:.75rem 1rem;border-radius:10px;
+  background:#FEE2E2;color:#B91C1C;
+  font-size:.85rem;font-weight:500;
+  border-left:3px solid #B91C1C
+}
+.error-msg.show{display:block}
+
+.footer-txt{
+  text-align:center;margin-top:1.5rem;
+  font-size:.75rem;color:#bbb
+}
+</style>
+</head>
+<body>
+<div class="bg-blob bg-blob-1"></div>
+<div class="bg-blob bg-blob-2"></div>
+
+<div class="card">
+  <div class="logo-wrap">
+    <div class="logo-icon">🏷️</div>
+    <div class="logo-name">Achadinhos</div>
+    <div class="logo-badges">
+      <span class="badge-ml">ML</span>
+      <span class="badge-sp">Shopee</span>
+    </div>
+    <div class="logo-sub">Painel Administrativo</div>
+  </div>
+
+  <h2>Entrar na sua conta</h2>
+
+  <div class="fg">
+    <label>E-mail</label>
+    <div class="input-wrap">
+      <i class="fas fa-envelope"></i>
+      <input type="email" id="inp-email" placeholder="seu@email.com" autocomplete="email">
+    </div>
+  </div>
+
+  <div class="fg">
+    <label>Senha</label>
+    <div class="input-wrap">
+      <i class="fas fa-lock"></i>
+      <input type="password" id="inp-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+  </div>
+
+  <div class="error-msg" id="error-msg"></div>
+
+  <button class="btn-login" id="btn-login">
+    <i class="fas fa-right-to-bracket"></i> Entrar
+  </button>
+
+  <div class="footer-txt">Achadinhos © 2026 — Todos os direitos reservados</div>
+</div>
+
+<script src="firebase-config.js"></script>
+<script>
+(function(){
+  // Se já logado, vai direto pro admin
+  auth.onAuthStateChanged(function(user){
+    if(user) window.location.href = 'admin.html';
+  });
+
+  var btn   = document.getElementById('btn-login');
+  var email = document.getElementById('inp-email');
+  var pass  = document.getElementById('inp-password');
+  var err   = document.getElementById('error-msg');
+
+  function showError(msg){
+    err.textContent = msg;
+    err.classList.add('show');
+  }
+  function hideError(){ err.classList.remove('show'); }
+
+  function setLoading(on){
+    btn.disabled = on;
+    btn.innerHTML = on
+      ? '<i class="fas fa-spinner fa-spin"></i> Entrando...'
+      : '<i class="fas fa-right-to-bracket"></i> Entrar';
+  }
+
+  // Login ao clicar
+  btn.addEventListener('click', doLogin);
+
+  // Login ao pressionar Enter
+  [email, pass].forEach(function(el){
+    el.addEventListener('keydown', function(e){
+      if(e.key === 'Enter') doLogin();
+    });
+  });
+
+  async function doLogin(){
+    hideError();
+    var e = email.value.trim();
+    var p = pass.value;
+    if(!e || !p){ showError('Preencha e-mail e senha.'); return; }
+    setLoading(true);
+    try {
+      await auth.signInWithEmailAndPassword(e, p);
+      window.location.href = 'admin.html';
+    } catch(ex) {
+      var msgs = {
+        'auth/user-not-found'  : 'E-mail não encontrado.',
+        'auth/wrong-password'  : 'Senha incorreta.',
+        'auth/invalid-email'   : 'E-mail inválido.',
+        'auth/too-many-requests': 'Muitas tentativas. Tente mais tarde.'
+      };
+      showError(msgs[ex.code] || 'Erro ao entrar. Tente novamente.');
+      setLoading(false);
+    }
+  }
+})();
+</script>
+</body>
+</html>
