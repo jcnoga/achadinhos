@@ -171,7 +171,7 @@ h2{
 (function(){
   // Se já logado, vai direto pro admin
   auth.onAuthStateChanged(function(user){
-    if(user) window.location.href = 'admin.html';
+    if(user) window.location.href = 'admin-achadinhos.html';
   });
 
   var btn   = document.getElementById('btn-login');
@@ -210,7 +210,7 @@ h2{
     setLoading(true);
     try {
       await auth.signInWithEmailAndPassword(e, p);
-      window.location.href = 'admin.html';
+      window.location.href = 'admin-achadinhos.html';
     } catch(ex) {
       var msgs = {
         'auth/user-not-found'  : 'E-mail não encontrado.',
